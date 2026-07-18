@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kas Angkatan</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f2f4f7;
+    color: #222;
+  }
+  header {
+    background: #1e3a5f;
+    color: #fff;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+  }
+  header .sub {
+    font-size: 12px;
+    opacity: .8;
+  }
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .btn-primary { background: #2f6fed; color: #fff; }
+  .btn-primary:hover { background: #2559c7; }
+  .btn-outline { background: transparent; border: 1px solid #fff; color: #fff; }
+  .btn-outline:hover { background: rgba(255,255,255,0.15); }
+  .btn-green { background: #1f9d55; color: #fff; }
+  .btn-green:hover { background: #197f45; }
+  .btn-red { background: #d64545; color: #fff; }
+  .btn-red:hover { background: #b53838; }
+  .btn-gray { background: #6b7280; color: #fff; }
+  .btn-gray:hover { background: #55595f; }
+
+  .container {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card .label { font-size: 13px; color: #666; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 700; }
+  .card.masuk .value { color: #1f9d55; }
+  .card.keluar .value { color: #d64545; }
+  .card.saldo .value { color: #1e3a5f; }
+
+  .panel {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .panel-header h2 { margin: 0; font-size: 17px; }
+
+  .table-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+    border: 1px solid #e2e5ea;
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 600px;
+  }
+  thead th {
+    background: #eef1f6;
+    position: sticky;
+    top: 0;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #d7dbe3;
+    z-index: 1;
+  }
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #edeff2;
+  }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:hover { background: #f0f5ff; }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-masuk { background: #e3f8ea; color: #1f9d55; }
+  .tag-keluar { background: #fbe7e7; color: #d64545; }
+  .nominal-masuk { color: #1f9d55; font-weight: 600; }
+  .nominal-keluar { color: #d64545; font-weight: 600; }
+  .actions-col button {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
+
+  /* Modal */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    padding: 22px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .modal h3 { margin-top: 0; }
+  .modal input, .modal select {
+    width: 100%;
+    padding: 9px 10px;
+    margin: 6px 0 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .modal label { font-size: 13px; color: #555; font-weight: 600; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .error-msg { color: #d64545; font-size: 13px; margin-top: -8px; margin-bottom: 10px; display: none; }
+
+  .admin-badge {
+    background: #1f9d55;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .hidden { display: none !important; }
+  .empty-msg { text-align: center; padding: 30px; color: #888; }
+  footer { text-align: center; padding: 20px; font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Kas Angkatan</h1>
+    <div class="sub" id="modeLabel">Mode: Lihat data (User)</div>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <span id="adminBadge" class="admin-badge hidden">Admin aktif</span>
+    <button class="btn btn-outline" id="loginBtn" onclick="openLoginModal()">Login Admin</button>
+    <button class="btn btn-outline hidden" id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="summary">
+    <div class="card masuk">
+      <div class="label">Total Pemasukan</div>
+      <div class="value" id="totalMasuk">Rp 0</div>
+    </div>
+    <div class="card keluar">
+      <div class="label">Total Pengeluaran</div>
+      <div class="value" id="totalKeluar">Rp 0</div>
+    </div>
+    <div class="card saldo">
+      <div class="label">Saldo Kas</div>
+      <div class="value" id="saldoKas">Rp 0</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Data Transaksi Kas</h2>
+      <button class="btn btn-primary hidden" id="addBtn" onclick="openTransModal()">+ Tambah Data</button>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Waktu</th>
+            <th>Keterangan</th>
+            <th>Jenis</th>
+            <th>Nominal</th>
+            <th class="admin-only hidden">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+    <div id="emptyMsg" class="empty-msg hidden">Belum ada data transaksi.</div>
+  </div>
+
+</div>
+
+<footer>Kas Angkatan XXV &mdash;Dibuat Oleh team ip.
+  <br><p>&copy; copyright 2026</p>
+
+</footer>
+
+<!-- Modal Login -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <h3>Login Admin</h3>
+    <label>Username</label>
+    <input type="text" id="loginUser" placeholder="Masukkan username">
+    <label>Password</label>
+    <div style="position:relative;">
+      <input type="password" id="loginPass" placeholder="Masukkan password" style="padding-right:40px;">
+      <button type="button" onclick="togglePassword()" aria-label="Tampilkan password" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:18px; padding:4px;">👁️</button>
+    </div>
+    <div class="error-msg" id="loginError">Username atau password salah.</div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeLoginModal()">Batal</button>
+      <button class="btn btn-primary" onclick="doLogin()">Masuk</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit Transaksi -->
+<div class="overlay" id="transOverlay">
+  <div class="modal">
+    <h3 id="transModalTitle">Tambah Data Kas</h3>
+    <input type="hidden" id="editId">
+    <label>Tanggal</label>
+    <input type="date" id="fTanggal">
+    <label>Waktu</label>
+    <input type="time" id="fWaktu">
+    <label>Keterangan</label>
+    <input type="text" id="fKeterangan" placeholder="Contoh: Iuran bulanan / Beli spanduk">
+    <label>Jenis</label>
+    <select id="fJenis">
+      <option value="masuk">Pemasukan</option>
+      <option value="keluar">Pengeluaran</option>
+    </select>
+    <label>Nominal (Rp)</label>
+    <input type="number" id="fNominal" placeholder="Contoh: 50000">
+    <div class="error-msg" id="transError">Semua kolom wajib diisi dengan benar.</div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeTransModal()">Batal</button>
+      <button class="btn btn-primary" id="transSaveBtn" onclick="saveTrans()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====== KONFIGURASI ADMIN (ganti sesuai kebutuhan) ======
+  const ADMIN_USERNAME = "admin";
+  const ADMIN_PASSWORD = "adminbendaharaxxv";
+  // ==========================================================
+
+  let isAdmin = false;
+  let data = [];
+
+  function loadData() {
+    const saved = localStorage.getItem('kasAngkatanData');
+    data = saved ? JSON.parse(saved) : [];
+  }
+  function persistData() {
+    localStorage.setItem('kasAngkatanData', JSON.stringify(data));
+  }
+
+  function formatRupiah(num) {
+    return "Rp " + Number(num).toLocaleString('id-ID');
+  }
+  function formatTanggal(iso) {
+    if (!iso) return "-";
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function renderSummary() {
+    let masuk = 0, keluar = 0;
+    data.forEach(d => {
+      if (d.jenis === 'masuk') masuk += Number(d.nominal);
+      else keluar += Number(d.nominal);
+    });
+    document.getElementById('totalMasuk').textContent = formatRupiah(masuk);
+    document.getElementById('totalKeluar').textContent = formatRupiah(keluar);
+    document.getElementById('saldoKas').textContent = formatRupiah(masuk - keluar);
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const emptyMsg = document.getElementById('emptyMsg');
+    tbody.innerHTML = "";
+
+    const sorted = [...data].sort((a, b) => {
+      const da = new Date(a.tanggal + "T" + (a.waktu || "00:00"));
+      const db = new Date(b.tanggal + "T" + (b.waktu || "00:00"));
+      return db - da;
+    });
+
+    if (sorted.length === 0) {
+      emptyMsg.classList.remove('hidden');
+    } else {
+      emptyMsg.classList.add('hidden');
+    }
+
+    sorted.forEach(item => {
+      const tr = document.createElement('tr');
+      const jenisTag = item.jenis === 'masuk'
+        ? '<span class="tag tag-masuk">Pemasukan</span>'
+        : '<span class="tag tag-keluar">Pengeluaran</span>';
+      const nominalClass = item.jenis === 'masuk' ? 'nominal-masuk' : 'nominal-keluar';
+      const sign = item.jenis === 'masuk' ? '+' : '-';
+
+      let actionsHtml = '';
+      if (isAdmin) {
+        actionsHtml = `<td class="actions-col">
+          <button class="btn btn-outline" style="border-color:#2f6fed;color:#2f6fed" onclick="openTransModal('${item.id}')">Edit</button>
+          <button class="btn btn-red" onclick="deleteTrans('${item.id}')">Hapus</button>
+        </td>`;
+      }
+
+      tr.innerHTML = `
+        <td>${formatTanggal(item.tanggal)}</td>
+        <td>${item.waktu || '-'}</td>
+        <td>${escapeHtml(item.keterangan)}</td>
+        <td>${jenisTag}</td>
+        <td class="${nominalClass}">${sign} ${formatRupiah(item.nominal)}</td>
+        ${actionsHtml}
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderAll() {
+    renderSummary();
+    renderTable();
+    updateAdminUI();
+  }
+
+  function updateAdminUI() {
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const addBtn = document.getElementById('addBtn');
+    const adminBadge = document.getElementById('adminBadge');
+    const modeLabel = document.getElementById('modeLabel');
+    const adminOnlyCols = document.querySelectorAll('.admin-only');
+
+    if (isAdmin) {
+      loginBtn.classList.add('hidden');
+      logoutBtn.classList.remove('hidden');
+      addBtn.classList.remove('hidden');
+      adminBadge.classList.remove('hidden');
+      modeLabel.textContent = "Mode: Admin (bisa tambah/ubah/hapus data)";
+      adminOnlyCols.forEach(el => el.classList.remove('hidden'));
+    } else {
+      loginBtn.classList.remove('hidden');
+      logoutBtn.classList.add('hidden');
+      addBtn.classList.add('hidden');
+      adminBadge.classList.add('hidden');
+      modeLabel.textContent = "Mode: Lihat data (User)";
+      adminOnlyCols.forEach(el => el.classList.add('hidden'));
+    }
+  }
+
+  // ===== Login Modal =====
+  function openLoginModal() {
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('loginOverlay').classList.add('show');
+  }
+  function closeLoginModal() {
+    document.getElementById('loginOverlay').classList.remove('show');
+  }
+  function togglePassword() {
+    const input = document.getElementById('loginPass');
+    const btn = event.currentTarget;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+      btn.setAttribute('aria-label', 'Sembunyikan password');
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+      btn.setAttribute('aria-label', 'Tampilkan password');
+    }
+  }
+  function doLogin() {
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    if (user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
+      isAdmin = true;
+      closeLoginModal();
+      renderAll();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  }
+  function logout() {
+    isAdmin = false;
+    renderAll();
+  }
+
+  // ===== Transaksi Modal =====
+  function openTransModal(id) {
+    document.getElementById('transError').style.display = 'none';
+    if (id) {
+      const item = data.find(d => d.id === id);
+      document.getElementById('transModalTitle').textContent = "Edit Data Kas";
+      document.getElementById('editId').value = id;
+      document.getElementById('fTanggal').value = item.tanggal;
+      document.getElementById('fWaktu').value = item.waktu;
+      document.getElementById('fKeterangan').value = item.keterangan;
+      document.getElementById('fJenis').value = item.jenis;
+      document.getElementById('fNominal').value = item.nominal;
+    } else {
+      document.getElementById('transModalTitle').textContent = "Tambah Data Kas";
+      document.getElementById('editId').value = '';
+      const now = new Date();
+      document.getElementById('fTanggal').value = now.toISOString().slice(0,10);
+      document.getElementById('fWaktu').value = now.toTimeString().slice(0,5);
+      document.getElementById('fKeterangan').value = '';
+      document.getElementById('fJenis').value = 'masuk';
+      document.getElementById('fNominal').value = '';
+    }
+    document.getElementById('transOverlay').classList.add('show');
+  }
+  function closeTransModal() {
+    document.getElementById('transOverlay').classList.remove('show');
+  }
+  function saveTrans() {
+    const id = document.getElementById('editId').value;
+    const tanggal = document.getElementById('fTanggal').value;
+    const waktu = document.getElementById('fWaktu').value;
+    const keterangan = document.getElementById('fKeterangan').value.trim();
+    const jenis = document.getElementById('fJenis').value;
+    const nominal = document.getElementById('fNominal').value;
+
+    if (!tanggal || !waktu || !keterangan || !nominal || Number(nominal) <= 0) {
+      document.getElementById('transError').style.display = 'block';
+      return;
+    }
+
+    if (id) {
+      const item = data.find(d => d.id === id);
+      item.tanggal = tanggal;
+      item.waktu = waktu;
+      item.keterangan = keterangan;
+      item.jenis = jenis;
+      item.nominal = Number(nominal);
+    } else {
+      data.push({
+        id: Date.now().toString(),
+        tanggal, waktu, keterangan, jenis,
+        nominal: Number(nominal)
+      });
+    }
+    persistData();
+    closeTransModal();
+    renderAll();
+  }
+  function deleteTrans(id) {
+    if (confirm('Yakin ingin menghapus data ini?')) {
+      data = data.filter(d => d.id !== id);
+      persistData();
+      renderAll();
+    }
+  }
+
+  // Init
+  loadData();
+  renderAll();
+</script>
+</body>
+</html>
