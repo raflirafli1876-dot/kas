@@ -12,6 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- LCP: logo loading screen dimuat paling awal -->
 <link rel="preload" as="image" href="public/Logo_xxvganespic.png" fetchpriority="high">
+<!-- Preload foto developer agar langsung tampil saat modal dibuka -->
+<link rel="preload" as="image" href="public/Yusuf%20Hafidhudin.jpg" fetchpriority="low">
+<link rel="preload" as="image" href="public/Rafli%20Adzanur%20Ramadhan.png" fetchpriority="low">
 
 <!-- Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -881,6 +884,9 @@
               src="${dev.foto}"
               alt="Foto ${dev.nama}"
               class="dev-photo"
+              loading="eager"
+              decoding="async"
+              width="260" height="260"
               style="width:100%;height:100%;object-fit:cover;display:block"
               onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:absolute;inset:0\\'><svg width=\\'56\' height=\\'56\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'rgba(${ac},.5)\\' stroke-width=\\'1.5\\'><circle cx=\\'12\\' cy=\\'8\\' r=\\'4\\'/><path d=\\'M4 20c0-4 3.6-7 8-7s8 3 8 7\\'/></svg></div>'"
             >
@@ -905,7 +911,6 @@
   }
 
   function openDevModal() {
-    renderDevCards();
     const m = document.getElementById('devModal');
     m.style.display = 'flex';
     m.classList.add('dev-open');
@@ -918,6 +923,9 @@
   document.getElementById('devModal').addEventListener('click', function(e) {
     if (e.target === this) closeDevModal();
   });
+
+  // render kartu developer sekali saat DOM siap — foto langsung preload dari cache
+  renderDevCards();
 </script>
 
 <div class="main-enter max-w-[1150px] mx-auto px-5 sm:px-6 py-8 relative z-10" style="min-height:60vh">
