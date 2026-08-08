@@ -220,6 +220,39 @@
     overflow: hidden;
     cursor: auto !important;
   }
+  .href a {
+    display: inline-flex;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    align-items: center;
+    gap: .5rem;
+    border-radius: .5rem;
+    padding: .625rem 1rem;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    letter-spacing: .025em;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .3s;
+    border: 1px solid hsla(0,0%,100%,.15);
+    background-color: hsla(0,0%,100%,.03);
+    color: rgb(245 245 244);
+    text-decoration: none;
+  }
+  .href a:hover {
+    border-color: hsla(94,21%,59%,.7);
+    color: rgb(201 216 188);
+    --tw-shadow: 0 0 16px hsla(94,21%,59%,.35);
+    --tw-shadow-colored: 0 0 16px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
+  .href a:active {
+    --tw-scale-x: .95;
+    --tw-scale-y: .95;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
   .login-frame-spin {
     animation-play-state: paused;
     position: absolute;
@@ -698,6 +731,7 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/></svg>
         Admin aktif
       </span>
+      <div class="href"><a href="daftar_kelas.html" target="_blank">Daftar kelas</a></div>
       <button class="btn btn-outline" id="loginBtn" onclick="openLoginModal()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
         Login Admin

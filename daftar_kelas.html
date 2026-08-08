@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Kas Kelas — Ganespic 25</title>
+<link rel="shortcut icon" href="public/Logo_xxvganespic.png" type="image/x-icon">
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:       #0c110d;
+  --surface:  #111a13;
+  --surface2: #172019;
+  --surface3: #1e2d20;
+  --border:   #253028;
+  --accent:   #7cf498;
+  --accent-d: #4db86a;
+  --accent-bg: rgba(124,244,152,.1);
+  --accent-border: rgba(124,244,152,.25);
+  --red:      #f05454;
+  --yellow:   #f5c842;
+  --text:     #dff0e1;
+  --muted:    #5a7260;
+  --mono:     'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 68px; position: sticky; top: 0; z-index: 200;
+}
+.logo { display: flex; align-items: center; gap: 13px; }
+.logo img { width: 42px; height: 42px; border-radius: 10px; object-fit: contain; }
+.logo-title { font-size: 17px; font-weight: 700; letter-spacing: -.3px; color: var(--text); }
+.logo-sub   { font-size: 13px; color: var(--muted); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+/* ── NAVBAR KELAS ── */
+.navbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; gap: 0;
+  overflow-x: auto; scrollbar-width: none;
+  position: sticky; top: 68px; z-index: 190;
+}
+.navbar::-webkit-scrollbar { display: none; }
+.nav-item {
+  padding: 15px 26px;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; border: none; background: transparent;
+  color: var(--muted); border-bottom: 2px solid transparent;
+  white-space: nowrap; font-family: inherit; transition: all .15s;
+}
+.nav-item:hover { color: var(--text); }
+.nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 9px 18px; border-radius: 8px; font-size: 14px;
+  font-weight: 600; cursor: pointer; border: none;
+  font-family: inherit; transition: all .15s;
+}
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+.btn-primary { background: var(--accent); color: #0c110d; }
+.btn-primary:hover { background: var(--accent-d); }
+.btn-add { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+.btn-add:hover { background: rgba(124,244,152,.18); }
+.btn-danger { background: rgba(240,84,84,.1); color: var(--red); border: 1px solid rgba(240,84,84,.25); }
+.btn-danger:hover { background: rgba(240,84,84,.22); }
+
+/* BADGE */
+.badge { font-size: 12px; padding: 4px 11px; border-radius: 20px; font-weight: 600; }
+.badge-pub   { background: rgba(124,244,152,.08); color: var(--accent); border: 1px solid rgba(124,244,152,.18); }
+.badge-admin { background: rgba(124,244,152,.15); color: var(--accent); border: 1px solid rgba(124,244,152,.3); }
+
+/* ── MAIN ── */
+main { padding: 28px; max-width: 1600px; margin: 0 auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── CARDS ── */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px,1fr)); gap: 14px; margin-bottom: 24px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; }
+.card-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.card-value { font-size: 26px; font-weight: 700; margin-top: 9px; font-family: var(--mono); }
+.cv-accent { color: var(--accent); }
+.cv-red    { color: var(--red); }
+.cv-yellow { color: var(--yellow); }
+.cv-muted  { color: var(--muted); }
+
+/* ── SEC HEADER ── */
+.sec-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+.sec-title { font-size: 18px; font-weight: 700; }
+.sec-sub   { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.sec-acts  { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th {
+  background: var(--surface2); padding: 13px 15px;
+  text-align: left; font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .4px; color: var(--muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+td { padding: 12px 15px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(124,244,152,.025); }
+
+.th-c { text-align: center !important; min-width: 64px; }
+.td-c { text-align: center; }
+
+/* STICKY NAME */
+.sticky-th  { position: sticky; left: 0; background: var(--surface2); z-index: 3; min-width: 160px; }
+.sticky-col { position: sticky; left: 0; background: var(--surface); z-index: 2; font-weight: 600; }
+tr:hover .sticky-col { background: #172c1a; }
+
+/* STATUS PILLS */
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  white-space: nowrap; user-select: none;
+}
+.pill-lunas  { background: rgba(124,244,152,.12); color: var(--accent); }
+.pill-belum  { background: rgba(240,84,84,.1);    color: var(--red); }
+.pill-cicil  { background: rgba(245,200,66,.1);   color: var(--yellow); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.clickable { cursor: pointer; border-bottom: 1px dashed currentColor; }
+
+/* ACT BUTTONS */
+.act-btn { padding: 6px 11px; font-size: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; font-family: inherit; transition: all .15s; }
+.act-edit { background: rgba(124,244,152,.1); color: var(--accent); margin-right: 5px; }
+.act-edit:hover { background: rgba(124,244,152,.22); }
+.act-del  { background: rgba(240,84,84,.08); color: var(--red); }
+.act-del:hover { background: rgba(240,84,84,.2); }
+
+.empty-row td { text-align: center; padding: 56px; color: var(--muted); font-size: 14px; }
+
+/* SEARCH */
+.srch {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 15px; color: var(--text);
+  font-size: 14px; outline: none; font-family: inherit; width: 240px;
+  transition: border-color .15s;
+}
+.srch:focus { border-color: var(--accent); }
+
+/* ── MODAL ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 400; display: none; align-items: center; justify-content: center; padding: 16px; }
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px 28px;
+  width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto;
+}
+.modal h2 { font-size: 19px; font-weight: 700; margin-bottom: 5px; }
+.modal p  { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+.fg { margin-bottom: 14px; }
+.fg label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.fg input, .fg select {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; color: var(--text);
+  font-size: 14px; outline: none; font-family: inherit; transition: border-color .15s;
+}
+.fg input:focus, .fg select:focus { border-color: var(--accent); }
+.modal-acts { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+.err-msg { color: var(--red); font-size: 13px; margin-top: 6px; display: none; }
+
+/* STATUS PICKER */
+.st-opt {
+  text-align: left; cursor: pointer; border: 1px solid var(--border);
+  border-radius: 9px; padding: 13px 16px;
+  background: var(--surface2); color: var(--text);
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  transition: background .1s; width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.st-opt:hover, .st-opt.cur { background: var(--surface3); border-color: var(--accent); }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 26px; right: 26px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 13px 20px;
+  font-size: 14px; font-weight: 500; z-index: 600;
+  opacity: 0; transform: translateY(6px); transition: all .22s; pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.ok  { border-color: rgba(124,244,152,.4); color: var(--accent); }
+#toast.err { border-color: rgba(240,84,84,.4);   color: var(--red); }
+
+.pwd-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pwd-wrapper input {
+  padding-right: 40px !important;
+}
+.pwd-toggle {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  transition: color .2s ease;
+}
+.pwd-toggle:hover {
+  color: var(--text);
+}
+.hidden {
+  display: none !important;
+}
+
+@media(max-width:600px) {
+  .topbar { padding: 0 12px; }
+  main { padding: 14px 10px; }
+  .modal { padding: 20px 16px; }
+  .srch { width: 160px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <img src="https://kas-ganespic.vercel.app/public/Logo_xxvganespic.png" alt="Logo" onerror="this.style.display='none'">
+    <div>
+      <div class="logo-title">Kas Kelas — Ganespic 25</div>
+      <div class="logo-sub">Data Iuran Per Kelas · Rp 20.000/bulan</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="role-badge" class="badge badge-pub">👁 Publik</span>
+    <button id="btn-login"  class="btn btn-ghost" onclick="openLogin()">Login Admin</button>
+    <button id="btn-logout" class="btn btn-ghost" style="display:none" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- NAVBAR KELAS -->
+<nav class="navbar" id="navbar"></nav>
+
+<main id="main"></main>
+
+<!-- MODAL LOGIN -->
+<div class="overlay" id="m-login">
+  <div class="modal">
+    <h2>🔐 Login Admin</h2>
+    <p>Masuk untuk mengelola data iuran</p>
+    <div class="fg"><label>Username</label><input type="text" id="inp-user" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg">
+      <label>Password</label>
+      <div class="pwd-wrapper">
+        <input type="password" id="inp-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        <button type="button" id="pwdToggleBtn" onclick="togglePassword(event)" aria-label="Tampilkan password" class="pwd-toggle">
+          <svg id="eyeOpen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg id="eyeClosed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" aria-hidden="true"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="err-msg" id="login-err">Username atau password salah</div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeM('m-login')">Batal</button>
+      <button class="btn btn-primary" onclick="doLogin()">Masuk</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH/EDIT ANGGOTA -->
+<div class="overlay" id="m-anggota">
+  <div class="modal" style="max-width:340px">
+    <h2 id="ang-title">Tambah Anggota</h2>
+    <p id="ang-desc">Isi nama anggota kelas</p>
+    <div class="fg"><label>Nama Lengkap</label><input type="text" id="inp-nama" placeholder="Nama…" onkeydown="if(event.key==='Enter')saveAnggota()"></div>
+    <div class="err-msg" id="ang-err">Nama tidak boleh kosong</div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeM('m-anggota')">Batal</button>
+      <button class="btn btn-primary" onclick="saveAnggota()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT STATUS -->
+<div class="overlay" id="m-status">
+  <div class="modal" style="max-width:300px">
+    <h2 id="st-name">Edit Status</h2>
+    <p id="st-bulan">Bulan</p>
+    <div id="st-opts" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="modal-acts"><button class="btn btn-ghost" onclick="closeM('m-status')">Tutup</button></div>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div class="overlay" id="m-confirm">
+  <div class="modal" style="max-width:320px">
+    <h2>⚠ Hapus?</h2>
+    <p id="confirm-msg">Data akan dihapus permanen.</p>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeM('m-confirm')">Batal</button>
+      <button class="btn btn-danger" id="confirm-ok">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+const CRED  = { user: 'admin', pass: 'adminbendaharaxxv' };
+const IURAN = 20000;
+const BULAN_PENDEK = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const BULAN_FULL   = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+// ── SUPABASE ──────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://suuchcvorzzgyjqivfvo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1dWNoY3Zvcnp6Z3lqcWl2ZnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NzQ0NDcsImV4cCI6MjEwMTQ1MDQ0N30._thrDYitpRFmdL8D9mZ1hvqaB5BAwgOOBwPAAg4Ztlk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const KELAS = [
+  { id: 'A', label: 'Kelas X-A' },
+  { id: 'B', label: 'Kelas X-B' },
+  { id: 'C', label: 'Kelas X-C' },
+  { id: 'D', label: 'Kelas X-D' },
+  { id: 'E', label: 'Kelas X-E' },
+  { id: 'F', label: 'Kelas X-F' },
+  { id: 'R1', label: 'Kelas X-r1' },
+  { id: 'R2', label: 'Kelas X-r2' },
+  { id: 'R3', label: 'Kelas X-r3' },
+  { id: 'R4', label: 'Kelas X-r4'},
+  { id: 'N1', label: 'Kelas X-N1'},
+  { id: 'N2', label: 'Kelas X-N2'},
+  { id: 'N3', label: 'Kelas X-N3'},
+  { id: 'N4', label: 'Kelas X-N4'},
+  { id: 'N5', label: 'Kelas X-N5'},
+  { id: 'N6', label: 'Kelas X-N6'}
+];
+
+const STATUSES = [
+  { key: 'lunas', label: 'Lunas',       cls: 'pill-lunas' },
+  { key: 'belum', label: 'Belum Bayar', cls: 'pill-belum' },
+  { key: 'cicil', label: 'Cicilan',     cls: 'pill-cicil' },
+];
+
+// ── STATE ─────────────────────────────────────────────────────
+let isAdmin    = false;
+let curKelas   = 'A';
+let editAngId  = null;
+let editTarget = null;
+
+function emptyP() {
+  const p = {};
+  BULAN_FULL.forEach(m => p[m] = 'belum');
+  return p;
+}
+
+function defData() {
+  const d = {};
+  KELAS.forEach(k => d[k.id] = []);
+  return d;
+}
+
+// data sekarang diisi dari Supabase, bukan localStorage
+let data = defData();
+
+// save() tidak lagi dipakai - diganti operasi Supabase langsung
+function save() { /* no-op: data disimpan ke Supabase */ }
+
+function nextId(arr) { return arr.length ? Math.max(...arr.map(x => x.id)) + 1 : 1; }
+
+// ── LOADING STATE ─────────────────────────────────────────────
+function setLoading(on) {
+  if (on) {
+    document.body.style.opacity = '0.7';
+    document.body.style.pointerEvents = 'none';
+  } else {
+    document.body.style.opacity = '';
+    document.body.style.pointerEvents = '';
+  }
+}
+
+// ── LOAD DATA FROM SUPABASE ───────────────────────────────────
+async function loadData() {
+  setLoading(true);
+  try {
+    // Ambil semua anggota
+    const { data: anggotaRows, error: e1 } = await sb
+      .from('kas_kelas_anggota')
+      .select('*')
+      .order('urutan', { ascending: true })
+      .order('created_at', { ascending: true });
+    if (e1) throw e1;
+
+    // Ambil semua payments sekaligus
+    const { data: payRows, error: e2 } = await sb
+      .from('kas_kelas_payments')
+      .select('*');
+    if (e2) throw e2;
+
+    // Susun ke struktur data[kelasId] = [{ id, nama, payments:{} }]
+    data = defData();
+    (anggotaRows || []).forEach(a => {
+      if (!data[a.kelas]) data[a.kelas] = [];
+      const payments = emptyP();
+      (payRows || [])
+        .filter(p => p.anggota_id === a.id)
+        .forEach(p => { payments[p.bulan] = p.status; });
+      data[a.kelas].push({ id: a.id, nama: a.nama, payments });
+    });
+  } catch(e) {
+    console.error('Gagal loadData:', e);
+    showToast('Gagal memuat data: ' + (e.message || 'cek koneksi'), 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── NAVBAR ────────────────────────────────────────────────────
+function buildNav() {
+  document.getElementById('navbar').innerHTML = KELAS.map(k =>
+    `<button class="nav-item ${k.id===curKelas?'active':''}" data-id="${k.id}" onclick="goKelas('${k.id}')">
+      📋 ${k.label}
+    </button>`
+  ).join('');
+}
+
+function goKelas(id) {
+  curKelas = id;
+  buildNav();
+  renderKelas(id);
+}
+
+// ── RENDER KELAS ──────────────────────────────────────────────
+function renderKelas(id) {
+  const anggota = data[id] || [];
+
+  // summary
+  let tl=0, tb=0, tc=0, uang=0;
+  anggota.forEach(a => BULAN_FULL.forEach(m => {
+    const s = a.payments[m] || 'belum';
+    if (s==='lunas') { tl++; uang += IURAN; }
+    else if (s==='cicil') tc++;
+    else tb++;
+  }));
+  const total = anggota.length * 12;
+  const pct   = total ? Math.round(tl / total * 100) : 0;
+
+  const kInfo = KELAS.find(k => k.id === id);
+  const q = document.getElementById('srch-' + id)?.value?.toLowerCase() || '';
+  const filtered = anggota.filter(a => !q || a.nama.toLowerCase().includes(q));
+
+  document.getElementById('main').innerHTML = `
+    <div class="cards">
+      <div class="card"><div class="card-label">Anggota</div><div class="card-value cv-accent">${anggota.length}</div></div>
+      <div class="card"><div class="card-label">Terkumpul</div><div class="card-value cv-accent" style="font-size:17px">${rp(uang)}</div></div>
+      <div class="card"><div class="card-label">Lunas</div><div class="card-value cv-accent">${tl}</div></div>
+      <div class="card"><div class="card-label">Belum Bayar</div><div class="card-value cv-red">${tb}</div></div>
+      <div class="card"><div class="card-label">Cicilan</div><div class="card-value cv-yellow">${tc}</div></div>
+      <div class="card"><div class="card-label">Ketaatan</div><div class="card-value ${pct===100?'cv-accent':'cv-muted'}">${pct}%</div></div>
+    </div>
+
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title">📋 ${kInfo.label}</div>
+        <div class="sec-sub">${anggota.length} anggota · Iuran Rp 20.000/bulan</div>
+      </div>
+      <div class="sec-acts">
+        <input class="srch" id="srch-${id}" placeholder="🔍 Cari nama…" value="${q}" oninput="renderKelas('${id}')">
+        ${isAdmin ? `<button class="btn btn-add" onclick="openAddAng('${id}')">+ Tambah Anggota</button>` : ''}
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="sticky-th">#</th>
+            <th class="sticky-th" style="left:42px;min-width:150px">Nama</th>
+            ${BULAN_PENDEK.map((b,i) => `<th class="th-c" title="${BULAN_FULL[i]}">${b}</th>`).join('')}
+            <th class="th-c">Lunas</th>
+            ${isAdmin ? '<th>Aksi</th>' : ''}
+          </tr>
+        </thead>
+        <tbody>
+          ${renderRows(filtered, id)}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderRows(list, id) {
+  if (!list.length) {
+    const sp = 2 + 12 + 1 + (isAdmin ? 1 : 0);
+    return `<tr class="empty-row"><td colspan="${sp}">Belum ada anggota${isAdmin ? ' · klik "+ Tambah Anggota"' : ''}</td></tr>`;
+  }
+  return list.map((a, i) => {
+    const lunas = BULAN_FULL.filter(m => (a.payments[m]||'belum') === 'lunas').length;
+    return `<tr>
+      <td class="sticky-col" style="color:var(--muted);font-size:12px;font-family:var(--mono)">${i+1}</td>
+      <td class="sticky-col" style="left:42px">${a.nama}</td>
+      ${BULAN_FULL.map(m => {
+        const s = a.payments[m] || 'belum';
+        const sObj = STATUSES.find(x => x.key === s);
+        const icon = s==='lunas' ? '✓' : s==='cicil' ? '~' : '✗';
+        const cl = isAdmin ? 'clickable' : '';
+        const oc = isAdmin ? `onclick="openEditStatus('${id}','${a.id}','${m}')"` : '';
+        return `<td class="td-c"><span class="pill ${sObj.cls} ${cl}" ${oc} title="${BULAN_FULL[BULAN_FULL.indexOf(m)]}"><span class="dot"></span>${icon}</span></td>`;
+      }).join('')}
+      <td class="td-c" style="font-family:var(--mono);font-weight:600;font-size:12px;color:${lunas===12?'var(--accent)':'var(--muted)'}">${lunas}/12</td>
+      ${isAdmin ? `<td><button class="act-btn act-edit" onclick="openEditAng('${id}','${a.id}')">✏ Edit</button><button class="act-btn act-del" onclick="confirmHapus('${id}','${a.id}')">🗑</button></td>` : ''}
+    </tr>`;
+  }).join('');
+}
+
+function rp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+
+// ── ANGGOTA ───────────────────────────────────────────────────
+function openAddAng(kelasId) {
+  editAngId = null;
+  window._angKelas = kelasId;
+  document.getElementById('ang-title').textContent = '➕ Tambah Anggota';
+  document.getElementById('ang-desc').textContent  = 'Isi nama anggota kelas';
+  document.getElementById('inp-nama').value = '';
+  document.getElementById('ang-err').style.display = 'none';
+  document.getElementById('m-anggota').classList.add('open');
+  setTimeout(() => document.getElementById('inp-nama').focus(), 100);
+}
+
+function openEditAng(kelasId, id) {
+  editAngId = id;
+  window._angKelas = kelasId;
+  const a = data[kelasId].find(x => x.id === id);
+  document.getElementById('ang-title').textContent = '✏ Edit Nama';
+  document.getElementById('ang-desc').textContent  = `Edit nama anggota`;
+  document.getElementById('inp-nama').value = a.nama;
+  document.getElementById('ang-err').style.display = 'none';
+  document.getElementById('m-anggota').classList.add('open');
+  setTimeout(() => document.getElementById('inp-nama').focus(), 100);
+}
+
+function saveAnggota() {
+  const nama    = document.getElementById('inp-nama').value.trim();
+  const kelasId = window._angKelas;
+  if (!nama) { document.getElementById('ang-err').style.display = 'block'; return; }
+  document.getElementById('ang-err').style.display = 'none';
+
+  (async () => {
+    setLoading(true);
+    try {
+      if (editAngId !== null) {
+        // UPDATE nama
+        const { error } = await sb
+          .from('kas_kelas_anggota')
+          .update({ nama })
+          .eq('id', editAngId);
+        if (error) throw error;
+        showToast('Nama diperbarui ✓', 'ok');
+      } else {
+        // INSERT anggota baru
+        const urutan = (data[kelasId] || []).length;
+        const { data: inserted, error: e1 } = await sb
+          .from('kas_kelas_anggota')
+          .insert({ kelas: kelasId, nama, urutan })
+          .select()
+          .single();
+        if (e1) throw e1;
+
+        // INSERT payments awal untuk semua 12 bulan
+        const payRows = BULAN_FULL.map(bulan => ({
+          anggota_id: inserted.id,
+          bulan,
+          status: 'belum'
+        }));
+        const { error: e2 } = await sb.from('kas_kelas_payments').insert(payRows);
+        if (e2) throw e2;
+        showToast('Anggota ditambahkan ✓', 'ok');
+      }
+      closeM('m-anggota');
+      await loadData();
+      renderKelas(kelasId);
+    } catch(e) {
+      console.error('saveAnggota error:', e);
+      showToast('Gagal simpan: ' + (e.message || 'cek koneksi'), 'err');
+    } finally {
+      setLoading(false);
+    }
+  })();
+}
+
+// ── STATUS ────────────────────────────────────────────────────
+function openEditStatus(kelasId, angId, bulan) {
+  editTarget = { kelasId, angId, bulan };
+  const a   = data[kelasId].find(x => x.id === angId);
+  const cur = a.payments[bulan] || 'belum';
+  document.getElementById('st-name').textContent  = a.nama;
+  document.getElementById('st-bulan').textContent = '📅 ' + bulan;
+  document.getElementById('st-opts').innerHTML = STATUSES.map(s => `
+    <button class="st-opt ${s.key===cur?'cur':''}" onclick="setStatus('${s.key}')">
+      <span class="pill ${s.cls}"><span class="dot"></span>${s.label}</span>
+      ${s.key===cur ? '<span style="color:var(--accent)">✓</span>' : ''}
+    </button>`).join('');
+  document.getElementById('m-status').classList.add('open');
+}
+
+function setStatus(key) {
+  if (!editTarget) return;
+  const { kelasId, angId, bulan } = editTarget;
+
+  (async () => {
+    setLoading(true);
+    try {
+      const { error } = await sb
+        .from('kas_kelas_payments')
+        .update({ status: key, updated_at: new Date().toISOString() })
+        .eq('anggota_id', angId)
+        .eq('bulan', bulan);
+      if (error) throw error;
+      closeM('m-status');
+      await loadData();
+      renderKelas(kelasId);
+      showToast('Status diperbarui ✓', 'ok');
+    } catch(e) {
+      console.error('setStatus error:', e);
+      showToast('Gagal update status: ' + (e.message || 'cek koneksi'), 'err');
+    } finally {
+      setLoading(false);
+    }
+  })();
+}
+
+// ── HAPUS ─────────────────────────────────────────────────────
+function confirmHapus(kelasId, angId) {
+  const a = data[kelasId].find(x => x.id === angId);
+  document.getElementById('confirm-msg').textContent = `Hapus "${a.nama}" dan semua data pembayarannya?`;
+  document.getElementById('m-confirm').classList.add('open');
+  document.getElementById('confirm-ok').onclick = () => {
+    (async () => {
+      setLoading(true);
+      try {
+        // cascade delete otomatis hapus kas_kelas_payments via FK on delete cascade
+        const { error } = await sb
+          .from('kas_kelas_anggota')
+          .delete()
+          .eq('id', angId);
+        if (error) throw error;
+        closeM('m-confirm');
+        await loadData();
+        renderKelas(kelasId);
+        showToast('Anggota dihapus', 'ok');
+      } catch(e) {
+        console.error('hapus error:', e);
+        showToast('Gagal hapus: ' + (e.message || 'cek koneksi'), 'err');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  };
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────
+function openLogin() {
+  document.getElementById('inp-user').value = '';
+  const input = document.getElementById('inp-pass');
+  if (input) input.type = 'password';
+  const eyeOpen = document.getElementById('eyeOpen');
+  const eyeClosed = document.getElementById('eyeClosed');
+  if (eyeOpen) eyeOpen.classList.remove('hidden');
+  if (eyeClosed) eyeClosed.classList.add('hidden');
+  const btn = document.getElementById('pwdToggleBtn');
+  if (btn) btn.setAttribute('aria-label', 'Tampilkan password');
+
+  document.getElementById('inp-pass').value = '';
+  document.getElementById('login-err').style.display = 'none';
+  document.getElementById('m-login').classList.add('open');
+  setTimeout(() => document.getElementById('inp-user').focus(), 100);
+}
+function togglePassword(e) {
+  const input = document.getElementById('inp-pass');
+  const eyeOpen = document.getElementById('eyeOpen');
+  const eyeClosed = document.getElementById('eyeClosed');
+  const btn = e?.currentTarget || document.getElementById('pwdToggleBtn');
+
+  if (!input) return;
+
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  if (eyeOpen) eyeOpen.classList.toggle('hidden', show);
+  if (eyeClosed) eyeClosed.classList.toggle('hidden', !show);
+  if (btn) btn.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+}
+function doLogin() {
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  if (u === CRED.user && p === CRED.pass) {
+    isAdmin = true;
+    document.getElementById('role-badge').className = 'badge badge-admin';
+    document.getElementById('role-badge').textContent = '🔑 Admin';
+    document.getElementById('btn-login').style.display  = 'none';
+    document.getElementById('btn-logout').style.display = '';
+    closeM('m-login');
+    renderKelas(curKelas);
+    showToast('Login berhasil! Selamat datang 👋', 'ok');
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+function doLogout() {
+  isAdmin = false;
+  document.getElementById('role-badge').className = 'badge badge-pub';
+  document.getElementById('role-badge').textContent = '👁 Publik';
+  document.getElementById('btn-login').style.display  = '';
+  document.getElementById('btn-logout').style.display = 'none';
+  renderKelas(curKelas);
+  showToast('Berhasil logout', 'ok');
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('overlay'))
+    document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape')
+    document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
+});
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastT;
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.className = '', 3000);
+}
+
+// ── MIGRASI localStorage → Supabase (sekali jalan) ───────────
+async function migrasiLocalStorage() {
+  const KEY_LAMA = 'kas_kelas_v1';
+  const saved = localStorage.getItem(KEY_LAMA);
+  if (!saved) return;
+  let lokal;
+  try { lokal = JSON.parse(saved); } catch(e) { return; }
+  if (!lokal || typeof lokal !== 'object') return;
+
+  // Hitung total anggota
+  let total = 0;
+  KELAS.forEach(k => { if (Array.isArray(lokal[k.id])) total += lokal[k.id].length; });
+  if (total === 0) { localStorage.removeItem(KEY_LAMA); return; }
+
+  showToast('Memindahkan ' + total + ' anggota lokal ke Supabase...', 'ok');
+
+  for (const k of KELAS) {
+    const anggotaLama = Array.isArray(lokal[k.id]) ? lokal[k.id] : [];
+    for (let i = 0; i < anggotaLama.length; i++) {
+      const a = anggotaLama[i];
+      // Insert anggota
+      const { data: inserted, error: e1 } = await sb
+        .from('kas_kelas_anggota')
+        .insert({ kelas: k.id, nama: a.nama, urutan: i })
+        .select()
+        .single();
+      if (e1) { console.error('migrasi anggota error:', e1); continue; }
+
+      // Insert payments
+      const payRows = BULAN_FULL.map(bulan => ({
+        anggota_id: inserted.id,
+        bulan,
+        status: (a.payments && a.payments[bulan]) ? a.payments[bulan] : 'belum'
+      }));
+      await sb.from('kas_kelas_payments').insert(payRows);
+    }
+  }
+  localStorage.removeItem(KEY_LAMA);
+  showToast(total + ' anggota berhasil dipindah ke Supabase!', 'ok');
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+(async () => {
+  buildNav();
+  await migrasiLocalStorage();
+  await loadData();
+  renderKelas(curKelas);
+})();
+</script>
+</body>
+</html>
