@@ -520,11 +520,11 @@ function renderRows(list, id) {
         const sObj = STATUSES.find(x => x.key === s);
         const icon = s==='lunas' ? '✓' : s==='cicil' ? '~' : '✗';
         const cl = isAdmin ? 'clickable' : '';
-        const oc = isAdmin ? `onclick="openEditStatus('${id}',${a.id},'${m}')"` : '';
+        const oc = isAdmin ? `onclick="openEditStatus('${id}','${a.id}','${m}')"` : '';
         return `<td class="td-c"><span class="pill ${sObj.cls} ${cl}" ${oc} title="${BULAN_FULL[BULAN_FULL.indexOf(m)]}"><span class="dot"></span>${icon}</span></td>`;
       }).join('')}
       <td class="td-c" style="font-family:var(--mono);font-weight:600;font-size:12px;color:${lunas===12?'var(--accent)':'var(--muted)'}">${lunas}/12</td>
-      ${isAdmin ? `<td><button class="act-btn act-edit" onclick="openEditAng('${id}',${a.id})">✏ Edit</button><button class="act-btn act-del" onclick="confirmHapus('${id}',${a.id})">🗑</button></td>` : ''}
+      ${isAdmin ? `<td><button class="act-btn act-edit" onclick="openEditAng('${id}','${a.id}')">✏ Edit</button><button class="act-btn act-del" onclick="confirmHapus('${id}','${a.id}')">🗑</button></td>` : ''}
     </tr>`;
   }).join('');
 }
