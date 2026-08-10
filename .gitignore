@@ -17,4 +17,3 @@ node_modules
 # File cache Aider
 aider.tags.cache*
 cache.db*
-.aider*
