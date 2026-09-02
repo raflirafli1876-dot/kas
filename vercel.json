@@ -1,6 +1,25 @@
 {
   "buildCommand": null,
   "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/daftar_kelas.html",
+      "destination": "/daftar_kelas",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/daftar_kelas",
+      "destination": "/daftar_kelas.html"
+    },
+    {
+      "source": "/daftar-kelas",
+      "destination": "/daftar_kelas.html"
+    }
+  ],
   "headers": [
     {
       "source": "/public/(.*\\.(?:png|jpg|jpeg|webp|svg|gif|ico))",

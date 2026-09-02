@@ -484,6 +484,7 @@ function renderKelas(id) {
       <div class="sec-acts">
         <input class="srch" id="srch-${id}" placeholder="🔍 Cari nama…" value="${q}" oninput="renderKelas('${id}')">
         ${isAdmin ? `<button class="btn btn-add" onclick="openAddAng('${id}')">+ Tambah Anggota</button>` : ''}
+        ${isAdmin ? `<button class="btn btn-danger" onclick="confirmResetKelas('${id}')">↺ Reset Pembayaran</button>` : ''}
       </div>
     </div>
 
@@ -650,6 +651,7 @@ function confirmHapus(kelasId, angId) {
   const a = data[kelasId].find(x => x.id === angId);
   document.getElementById('confirm-msg').textContent = `Hapus "${a.nama}" dan semua data pembayarannya?`;
   document.getElementById('m-confirm').classList.add('open');
+  document.getElementById('confirm-ok').textContent = 'Hapus';
   document.getElementById('confirm-ok').onclick = () => {
     (async () => {
       setLoading(true);
@@ -672,6 +674,44 @@ function confirmHapus(kelasId, angId) {
       }
     })();
   };
+}
+
+// ── RESET PEMBAYARAN PER KELAS (ganti tahun) ────────────────────
+// Hanya dipanggil dari tombol admin di renderKelas()
+function confirmResetKelas(kelasId) {
+  if (!isAdmin) { showToast('Login admin dulu untuk reset', 'err'); return; }
+  const kInfo = KELAS.find(k => k.id === kelasId);
+  const jml = (data[kelasId] || []).length;
+  if (!jml) { showToast('Kelas ini belum ada anggota', 'err'); return; }
+  document.getElementById('confirm-msg').textContent =
+    `Reset semua pembayaran ${kInfo ? kInfo.label : kelasId} (${jml} anggota × 12 bulan) ke "Belum Bayar"? Cocok untuk ganti tahun ajaran. Aksi ini tidak bisa dibatalkan.`;
+  const okBtn = document.getElementById('confirm-ok');
+  okBtn.textContent = 'Ya, Reset';
+  document.getElementById('m-confirm').classList.add('open');
+  okBtn.onclick = () => doResetKelas(kelasId);
+}
+
+async function doResetKelas(kelasId) {
+  const ids = (data[kelasId] || []).map(a => a.id);
+  if (!ids.length) { closeM('m-confirm'); return; }
+  setLoading(true);
+  try {
+    const { error } = await sb
+      .from('kas_kelas_payments')
+      .update({ status: 'belum', updated_at: new Date().toISOString() })
+      .in('anggota_id', ids);
+    if (error) throw error;
+    closeM('m-confirm');
+    document.getElementById('confirm-ok').textContent = 'Hapus';
+    await loadData();
+    renderKelas(kelasId);
+    showToast('Semua pembayaran kelas di-reset ✓', 'ok');
+  } catch(e) {
+    console.error('reset kelas error:', e);
+    showToast('Gagal reset: ' + (e.message || 'cek koneksi'), 'err');
+  } finally {
+    setLoading(false);
+  }
 }
 
 // ── LOGIN ─────────────────────────────────────────────────────
