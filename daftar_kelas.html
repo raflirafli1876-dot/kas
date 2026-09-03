@@ -684,7 +684,7 @@ function confirmResetKelas(kelasId) {
   const jml = (data[kelasId] || []).length;
   if (!jml) { showToast('Kelas ini belum ada anggota', 'err'); return; }
   document.getElementById('confirm-msg').textContent =
-    `Reset semua pembayaran ${kInfo ? kInfo.label : kelasId} (${jml} anggota × 12 bulan) ke "Belum Bayar"? Cocok untuk ganti tahun ajaran. Aksi ini tidak bisa dibatalkan.`;
+    `Reset semua pembayaran ${kInfo ? kInfo.label : kelasId} (${jml} anggota × 12 bulan) ke "Belum Bayar"?Aksi ini tidak bisa dibatalkan.`;
   const okBtn = document.getElementById('confirm-ok');
   okBtn.textContent = 'Ya, Reset';
   document.getElementById('m-confirm').classList.add('open');
