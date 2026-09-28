@@ -397,22 +397,32 @@ function setLoading(on) {
 }
 
 // ── LOAD DATA FROM SUPABASE ───────────────────────────────────
+// Supabase REST dibatasi 1000 row per request — ambil berlapis sampai habis
+// (total payments sudah 2000+, tanpa ini kelas paling akhir selalu tampil "belum").
+async function fetchAll(table, orders = []) {
+  const PAGE = 1000;
+  let from = 0;
+  const out = [];
+  for (;;) {
+    let q = sb.from(table).select('*').range(from, from + PAGE - 1);
+    orders.forEach(o => { q = q.order(o, { ascending: true }); });
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    (rows || []).forEach(r => out.push(r));
+    if (!rows || rows.length < PAGE) break;
+    from += PAGE;
+  }
+  return out;
+}
+
 async function loadData() {
   setLoading(true);
   try {
     // Ambil semua anggota
-    const { data: anggotaRows, error: e1 } = await sb
-      .from('kas_kelas_anggota')
-      .select('*')
-      .order('urutan', { ascending: true })
-      .order('created_at', { ascending: true });
-    if (e1) throw e1;
+    const anggotaRows = await fetchAll('kas_kelas_anggota', ['urutan', 'created_at']);
 
-    // Ambil semua payments sekaligus
-    const { data: payRows, error: e2 } = await sb
-      .from('kas_kelas_payments')
-      .select('*');
-    if (e2) throw e2;
+    // Ambil semua payments (wajib berlapis, total > 1000 row)
+    const payRows = await fetchAll('kas_kelas_payments');
 
     // Susun ke struktur data[kelasId] = [{ id, nama, payments:{} }]
     data = defData();
@@ -420,7 +430,7 @@ async function loadData() {
       if (!data[a.kelas]) data[a.kelas] = [];
       const payments = emptyP();
       (payRows || [])
-        .filter(p => p.anggota_id === a.id)
+        .filter(p => String(p.anggota_id) === String(a.id))
         .forEach(p => { payments[p.bulan] = p.status; });
       data[a.kelas].push({ id: a.id, nama: a.nama, payments });
     });
@@ -547,7 +557,9 @@ function openAddAng(kelasId) {
 function openEditAng(kelasId, id) {
   editAngId = id;
   window._angKelas = kelasId;
-  const a = data[kelasId].find(x => x.id === id);
+  const a = data[kelasId].find(x => String(x.id) === String(id));
+  if (!a) { showToast('Data anggota tidak ketemu, refresh dulu', 'err'); return; }
+  editAngId = a.id;
   document.getElementById('ang-title').textContent = '✏ Edit Nama';
   document.getElementById('ang-desc').textContent  = `Edit nama anggota`;
   document.getElementById('inp-nama').value = a.nama;
@@ -607,8 +619,9 @@ function saveAnggota() {
 
 // ── STATUS ────────────────────────────────────────────────────
 function openEditStatus(kelasId, angId, bulan) {
-  editTarget = { kelasId, angId, bulan };
-  const a   = data[kelasId].find(x => x.id === angId);
+  const a = data[kelasId].find(x => String(x.id) === String(angId));
+  if (!a) { showToast('Data anggota tidak ketemu, refresh dulu', 'err'); return; }
+  editTarget = { kelasId, angId: a.id, bulan };
   const cur = a.payments[bulan] || 'belum';
   document.getElementById('st-name').textContent  = a.nama;
   document.getElementById('st-bulan').textContent = '📅 ' + bulan;
@@ -627,12 +640,22 @@ function setStatus(key) {
   (async () => {
     setLoading(true);
     try {
-      const { error } = await sb
+      // Update dulu; pakai .select() biar ketahuan kalau row-nya memang tidak ada
+      // (kasus X-N1 dst: baris payment belum pernah dibuat → update sukses tapi 0 row berubah).
+      const { data: updated, error } = await sb
         .from('kas_kelas_payments')
         .update({ status: key, updated_at: new Date().toISOString() })
         .eq('anggota_id', angId)
-        .eq('bulan', bulan);
+        .eq('bulan', bulan)
+        .select();
       if (error) throw error;
+      if (!updated || updated.length === 0) {
+        // Row belum ada → buat baru (fallback kalau 12 row awal gagal dibuat)
+        const { error: e2 } = await sb
+          .from('kas_kelas_payments')
+          .insert({ anggota_id: angId, bulan, status: key });
+        if (e2) throw e2;
+      }
       closeM('m-status');
       await loadData();
       renderKelas(kelasId);
@@ -648,7 +671,8 @@ function setStatus(key) {
 
 // ── HAPUS ─────────────────────────────────────────────────────
 function confirmHapus(kelasId, angId) {
-  const a = data[kelasId].find(x => x.id === angId);
+  const a = data[kelasId].find(x => String(x.id) === String(angId));
+  if (!a) { showToast('Data anggota tidak ketemu, refresh dulu', 'err'); return; }
   document.getElementById('confirm-msg').textContent = `Hapus "${a.nama}" dan semua data pembayarannya?`;
   document.getElementById('m-confirm').classList.add('open');
   document.getElementById('confirm-ok').textContent = 'Hapus';
@@ -660,7 +684,7 @@ function confirmHapus(kelasId, angId) {
         const { error } = await sb
           .from('kas_kelas_anggota')
           .delete()
-          .eq('id', angId);
+          .eq('id', a.id);
         if (error) throw error;
         closeM('m-confirm');
         await loadData();
