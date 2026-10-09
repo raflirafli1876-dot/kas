@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preload" as="image" href="/Logo_xxvganespic.png" fetchpriority="high">
 <link rel="icon" href="public/Logo_xxvganespic.png" type="image/png">
-<link rel="preload" as="image" href="public/logo_xxvganespic.png" fetchpriority="high">
 <title>Kas Ganespic</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- LCP: logo loading screen dimuat paling awal -->
-<link rel="preload" as="image" href="public/Logo_xxvganespic.png" fetchpriority="high">
 <!-- Preload foto developer agar langsung tampil saat modal dibuka -->
 <link rel="preload" as="image" href="public/Yusuf%20Hafidhudin.jpg" fetchpriority="high">
 <link rel="preload" as="image" href="public/Rafli%20Adzanur%20Ramadhan.png" fetchpriority="high">
@@ -687,7 +685,7 @@
 <body class="font-body bg-ink text-stone-200 antialiased min-h-screen relative" style="background:#0c100b">
 
 <!-- ===================== LOADING SCREEN ===================== -->
-<div id="loading-screen" style="background:#0c100b" role="status" aria-live="polite">
+<div id="loading-screen" style="background:#0c100b;display:flex;opacity:1;visibility:visible" role="status" aria-live="polite">
   <div class="ls-text">
     <p class="ls-title">Memuat Kas Ganespic</p>
     <p class="ls-sub">Angkatan 25</p>
@@ -702,7 +700,7 @@
               src="public/Logo_xxvganespic.png"
               alt="Logo Angkatan 25"
               width="140" height="140"
-              loading="eager" fetchpriority="high" decoding="async">
+              loading="eager" fetchpriority="high" decoding="sync" style="display:block;visibility:visible;opacity:1">
   </div>
 
   <div class="ls-dots" aria-hidden="true"><span></span><span></span><span></span></div>
