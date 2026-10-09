@@ -13,8 +13,8 @@
 <!-- LCP: logo loading screen dimuat paling awal -->
 <link rel="preload" as="image" href="public/Logo_xxvganespic.png" fetchpriority="high">
 <!-- Preload foto developer agar langsung tampil saat modal dibuka -->
-<link rel="preload" as="image" href="public/Yusuf%20Hafidhudin.jpg" fetchpriority="low">
-<link rel="preload" as="image" href="public/Rafli%20Adzanur%20Ramadhan.png" fetchpriority="low">
+<link rel="preload" as="image" href="public/Yusuf%20Hafidhudin.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="public/Rafli%20Adzanur%20Ramadhan.png" fetchpriority="high">
 
 <!-- Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -349,7 +349,7 @@
     will-change: opacity;
     contain: layout paint style;
   }
-  #loading-screen.is-hidden{ opacity:0; pointer-events:none; }
+  #loading-screen.is-hidden{ opacity:0; pointer-events:none; visibility:hidden; }
 
   /* --- teks di bagian atas --- */
   .ls-text{
@@ -893,6 +893,7 @@
               alt="Foto ${dev.nama}"
               class="dev-photo"
               loading="eager"
+              fetchpriority="high"
               decoding="async"
               width="260" height="260"
               style="width:100%;height:100%;object-fit:cover;display:block"
