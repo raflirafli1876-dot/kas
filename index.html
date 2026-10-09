@@ -885,7 +885,7 @@
       const ac  = `${r},${g},${b}`;
       const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
       return `
-        <div class="finance-card" style="--accent:${hex};text-align:center;padding:0;overflow:hidden">
+        <div class="finance-card" style="--accent:${hex};text-align:center;padding:0;overflow:hidden;display:flex;flex-direction:column;height:100%">
           <!-- foto preview — persegi penuh atas, rounded top mengikuti kartu -->
           <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:1rem 1rem 0 0;background:rgba(${ac},.08);position:relative">
             <img
@@ -901,10 +901,10 @@
             >
           </div>
           <!-- info: flex-col items-center untuk alignment simetris -->
-          <div style="display:flex;flex-direction:column;align-items:center;padding:1.1rem 1.25rem 1.25rem;gap:.35rem">
-            <div class="font-semibold text-stone-100" style="font-size:1rem;line-height:1.35">${dev.nama}</div>
+          <div style="display:flex;flex-direction:column;align-items:center;padding:1.1rem 1.25rem 1.25rem;gap:.35rem;flex:1">
+            <div class="font-semibold text-stone-100" style="font-size:1rem;line-height:1.35;min-height:2.75rem;display:flex;align-items:center;justify-content:center">${dev.nama}</div>
             <div class="text-[11px] uppercase tracking-[0.12em] text-stone-400 font-semibold">${dev.kelas}</div>
-            <div class="font-mono" style="font-size:.72rem;color:rgba(${ac},.85);background:rgba(${ac},.08);border:1px solid rgba(${ac},.2);border-radius:.375rem;padding:.18rem .55rem;display:inline-block;margin-top:.15rem;margin-bottom:.65rem">No ID: ${dev.noId}</div>
+            <div class="font-mono" style="font-size:.72rem;color:rgba(${ac},.85);background:rgba(${ac},.08);border:1px solid rgba(${ac},.2);border-radius:.375rem;padding:.18rem .55rem;display:inline-block;margin-top:auto;margin-bottom:.65rem">No ID: ${dev.noId}</div>
             <button
                class="btn btn-outline"
                style="width:100%;justify-content:center;font-size:.8rem;padding:.5rem .875rem;position:relative;z-index:10"
