@@ -886,8 +886,8 @@
       const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
       return `
         <div class="finance-card" style="--accent:${hex};flex:1;min-width:220px;max-width:260px;text-align:center;padding:0;overflow:hidden">
-          <!-- foto preview — persegi penuh atas -->
-          <div style="width:100%;aspect-ratio:1/1;overflow:hidden;background:rgba(${ac},.08);position:relative">
+          <!-- foto preview — persegi penuh atas, rounded top mengikuti kartu -->
+          <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:1rem 1rem 0 0;background:rgba(${ac},.08);position:relative">
             <img
               src="${dev.foto}"
               alt="Foto ${dev.nama}"
@@ -896,15 +896,15 @@
               fetchpriority="high"
               decoding="async"
               width="260" height="260"
-              style="width:100%;height:100%;object-fit:cover;display:block"
+              style="width:100%;height:100%;object-fit:cover;object-position:center;display:block"
               onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:absolute;inset:0\\'><svg width=\\'56\' height=\\'56\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'rgba(${ac},.5)\\' stroke-width=\\'1.5\\'><circle cx=\\'12\\' cy=\\'8\\' r=\\'4\\'/><path d=\\'M4 20c0-4 3.6-7 8-7s8 3 8 7\\'/></svg></div>'"
             >
           </div>
-          <!-- info -->
-          <div style="padding:1.1rem 1.25rem 1.25rem">
-            <div class="font-semibold text-stone-100" style="font-size:1rem;margin-bottom:.3rem">${dev.nama}</div>
-            <div class="text-[11px] uppercase tracking-[0.12em] text-stone-400 font-semibold" style="margin-bottom:.5rem">${dev.kelas}</div>
-            <div class="font-mono" style="font-size:.72rem;color:rgba(${ac},.85);background:rgba(${ac},.08);border:1px solid rgba(${ac},.2);border-radius:.375rem;padding:.18rem .55rem;display:inline-block;margin-bottom:.9rem">No ID: ${dev.noId}</div>
+          <!-- info: flex-col items-center untuk alignment simetris -->
+          <div style="display:flex;flex-direction:column;align-items:center;padding:1.1rem 1.25rem 1.25rem;gap:.35rem">
+            <div class="font-semibold text-stone-100" style="font-size:1rem;line-height:1.35">${dev.nama}</div>
+            <div class="text-[11px] uppercase tracking-[0.12em] text-stone-400 font-semibold">${dev.kelas}</div>
+            <div class="font-mono" style="font-size:.72rem;color:rgba(${ac},.85);background:rgba(${ac},.08);border:1px solid rgba(${ac},.2);border-radius:.375rem;padding:.18rem .55rem;display:inline-block;margin-top:.15rem;margin-bottom:.65rem">No ID: ${dev.noId}</div>
             <button
                class="btn btn-outline"
                style="width:100%;justify-content:center;font-size:.8rem;padding:.5rem .875rem;position:relative;z-index:10"
